@@ -22,6 +22,9 @@ source ./venv/bin/activate
 pip install -r requirements.txt
 python3 main.py /path/to/moduletimetable.ics ./out.ics
 ```
+Using the generated file, you can add the `.ics` file to your Google Calendar, Outlook Calendar, Apple Calendar, etc.<br/>
+To do so, search Google for instructions :)
+
 
 ## TODO
 - [ ] Web version via pyodide
