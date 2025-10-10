@@ -1,3 +1,5 @@
+import datetime
+
 from ics import Calendar, Event
 from arrow import Arrow
 from typing import Set
@@ -11,14 +13,25 @@ MODULE_NAME_MAPPING = {
     'IT1113': 'NETWORK TECHNOLOGIES',
     'IT1114': 'PROGRAMMING',
     'IT1115': 'UX DESIGN IN WEB DEVELOPMENT',
-    'IT-DIT': 'DIT PERSONAL MENTOR CONTACT TIME'
-}
+    'IT-DIT': 'DIT PERSONAL MENTOR CONTACT TIME',
+    'ITX102': 'FITNESS FOR LIFE',
+    'DXX116': 'COLOURISE YOUR LIFE',
 
+    'IT1121': 'AI & DATA ANALYTICS',
+    'IT1122': 'CYBERSECURITY TECHNOLOGIES & ETHICS',
+    'IT1123': 'DATABASE DESIGN & ADMINISTRATION',
+    'IT1124': 'STATISTICAL RESEARCH METHODS',
+    'ITX101': 'PERSONAL CAREER STRATEGY 1',
+    'ITX106': 'UNDERSTANDING SG 1: A CLOSER LOOK',
+    'IT1125': 'WEB DEVELOPMENT PROJECT',
+}
 
 parser = argparse.ArgumentParser(description='A script to reformat a valid NYP timetable from an .ics file so that it '
                                              'is easier to read in the calendar.')
 parser.add_argument('input_file', help='The input .ics file')
 parser.add_argument('output_file', help='The output formatted .ics file')
+parser.add_argument('-b', '--base_diff_file', default=None,
+                    help='The input base .ics file. Use this to output an ics file with newer events only.')
 parser.add_argument('-o', '--overwrite-if-exists', dest='overwrite_if_exists', default=False, action='store_true',
                     help='Force overwrite output file if it already exists')
 parser.add_argument('-v', '--verbose', dest="verbose", default=False, action='store_true',
@@ -155,24 +168,35 @@ def main():
         new_calendar.events.add(new_event)
     print(f'No. of events after merging classes with the same name: {len(new_calendar.events)}')
 
-    # Stage 3: Make Event Name Easier to Read
+    # Stage 3: Make Event Name Easier to Read. Remove repeated events from base file if needed.
+    base_ics = None
+    if args.base_diff_file:
+        with open(args.base_diff_file, 'r') as f:
+            base_ics = Calendar(f.read())
+            f.close()
     for event in new_calendar.events:
+        duplicate_event_in_cal = get_event_by_time(base_ics, event.begin, event.end) if base_ics else None
         new_event = event.clone()
         new_event.name = parse_event_title(new_event.name)
-        new_calendar_final.events.add(new_event)
+        if not (duplicate_event_in_cal and duplicate_event_in_cal.name == new_event.name and
+                duplicate_event_in_cal.description == new_event.description and
+                duplicate_event_in_cal.location == new_event.location):
+            new_calendar_final.events.add(new_event)
+
+    if base_ics:
+        print(f'No. of new events to add to the calendar: {len(new_calendar_final.events)}')
 
     # Stage 4: Show Timetable and Save
     if args.verbose:
         for event in new_calendar_final.events:
             print(event.name, end=': \n')
-            print('  '+str(event.begin.format('DD/MM/YY (HH:mm)')), end=' - ')
+            print('  ' + str(event.begin.format('DD/MM/YY (HH:mm)')), end=' - ')
             print(event.end.format('DD/MM/YY (HH:mm)'))
             for line in event.description.split('\n'):
                 print(f'  {line}')
             for line in event.location.split('\n'):
                 print(f'  {line}')
             print()
-
     with open(args.output_file, 'w') as f:
         f.writelines(new_calendar_final.serialize_iter())
         f.close()
@@ -181,6 +205,9 @@ def main():
 if __name__ == '__main__':
     if not os.path.isfile(args.input_file):
         print(f"Input file '{args.input_file}' not found! Exiting...")
+        exit(1)
+    elif args.base_diff_file and not os.path.isfile(args.base_diff_file):
+        print(f"Base Diff file '{args.base_diff_file}' not found! Exiting...")
         exit(1)
     elif os.path.isfile(args.output_file) and not args.overwrite_if_exists:
         ans = ""
