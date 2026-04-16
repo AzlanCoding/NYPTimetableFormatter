@@ -24,6 +24,16 @@ MODULE_NAME_MAPPING = {
     'ITX101': 'PERSONAL CAREER STRATEGY 1',
     'ITX106': 'UNDERSTANDING SG 1: A CLOSER LOOK',
     'IT1125': 'WEB DEVELOPMENT PROJECT',
+    'EGX118': 'CREATIVE EXPRESSION THROUGH PROJECTION',
+
+    'IT2111': 'DATA STRUCTURES & ALGORITHMS',
+    'IT2112': 'AGILE DEVELOPMENT PROCESS WITH DEVOPS',
+    'IT2113': 'CLOUD COMPUTING',
+    'IT2114': 'DIGITAL USER EXPERIENCE DESIGN',
+    'IT2115': 'FULL STACK APPLICATION DEVELOPMENT',
+    'ITX296': 'RESPECT IN RELATIONSHIPS',
+    'ITX298': 'PERSONAL CAREER STRATEGY 2',
+    'DXX211': 'GREEN SCREEN VISUAL EFFECTS',
 }
 
 parser = argparse.ArgumentParser(description='A script to reformat a valid NYP timetable from an .ics file so that it '
@@ -212,8 +222,8 @@ if __name__ == '__main__':
     elif os.path.isfile(args.output_file) and not args.overwrite_if_exists:
         ans = ""
         while ans.lower() not in ['y', 'n', 'yes', 'no', 'maybe']:
-            ans = input(f"Output file '{args.output_file}' already exists.\n  Would you like to overwrite it? (y/n): ")
-        if ans.lower() in ['n', 'no', 'maybe']:
-            print("User canceled operation. Exiting...")
-            exit(0)
+            ans = input(f"Output file '{args.output_file}' already exists.\n  Would you like to overwrite it? (y/n): ").strip()
+            if ans.lower() in ['n', 'no', 'maybe']:
+                print("User canceled operation. Exiting...")
+                exit(0)
     main()
